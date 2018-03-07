@@ -66,7 +66,7 @@ function create_ability_card_back(name, level) {
 
     var name_span = document.createElement("span");
     name_span.className = "name";
-    name_span.innerText = name + "-" + level;
+    name_span.innerText = name;
     card.appendChild(name_span);
 
     return card;
@@ -78,23 +78,9 @@ function create_ability_card_front(initiative, name, shuffle, lines, attack, mov
 
     var name_span = document.createElement("span");
     name_span.className = "name";
-    name_span.innerText = name + "-" + level;
+    name_span.innerText = name;
     card.appendChild(name_span);
-
-	
-	var healthNormal_span = document.createElement("span");
-    healthNormal_span.className = "healthNormal";
-    healthNormal_span.innerText = "HP " + health[0];
-    card.appendChild(healthNormal_span);
-	
-	if ( health[1] > 0 ) {
-		var healthElite_span = document.createElement("span");
-		healthElite_span.className = "healthElite";
-		healthElite_span.innerText = "HP " + health[1];
-		card.appendChild(healthElite_span);
-	}
-	
-	
+    
     var initiative_span = document.createElement("span");
     initiative_span.className = "initiative";
     initiative_span.innerText = initiative;
@@ -219,28 +205,8 @@ function load_ability_deck(deck_class, deck_name, level) {
         if (this.discard.length > 0) {
             var card = this.discard[this.discard.length-1];
             var cards_lines = card.starting_lines;
-            var extra_lines = [];
-            if (this.is_boss()) {
-                var new_lines = [];
-                cards_lines.forEach(function (line) {
-                    new_lines = new_lines.concat(special_to_lines(line, deck.special1, deck.special2));
-                });
-                cards_lines = new_lines;
-                if (this.immunities) {
-                    extra_lines = extra_lines.concat(immunities_to_lines(this.immunities));
-                }
-                if (this.notes) {
-                    extra_lines = extra_lines.concat(notes_to_lines(this.notes));
-                }
-            }
-            else {
-                if (this.attributes) {
-                    extra_lines = extra_lines.concat(attributes_to_lines(this.attributes));
-                }
 
-            }
-
-            card.paint_front_card(this.get_real_name(), cards_lines.concat(extra_lines), this.attack, this.move, this.range, this.level, this.health);
+            card.paint_front_card(this.get_real_name(), cards_lines, this.attack, this.move, this.range, this.level, this.health);
 
             card.ui.set_depth(-3);
             card.ui.addClass("pull");
@@ -254,28 +220,8 @@ function load_ability_deck(deck_class, deck_name, level) {
     deck.draw_top_card = function () {
 
         var cards_lines = this.draw_pile[0].starting_lines;
-        var extra_lines = [];
-        if (this.is_boss()) {
-            var new_lines = [];
-            cards_lines.forEach(function (line) {
-                new_lines = new_lines.concat(special_to_lines(line, deck.special1, deck.special2));
-            });
-            cards_lines = new_lines;
-            if (this.immunities) {
-                extra_lines = extra_lines.concat(immunities_to_lines(this.immunities));
-            }
-            if (this.notes) {
-                extra_lines = extra_lines.concat(notes_to_lines(this.notes));
-            }
-        }
-        else {
-            if (this.attributes) {
-                extra_lines = extra_lines.concat(attributes_to_lines(this.attributes));
-            }
 
-        }
-
-        this.draw_pile[0].paint_front_card(this.get_real_name(), cards_lines.concat(extra_lines), this.attack, this.move, this.range, this.level, this.health);
+        this.draw_pile[0].paint_front_card(this.get_real_name(), cards_lines, this.attack, this.move, this.range, this.level, this.health);
         force_repaint_deck(this);
     }
 
@@ -356,7 +302,7 @@ function force_repaint_deck(deck) {
 // This should be dynamic dependant on lines per card
 function refresh_ui() {
     var actual_card_height = 296;
-    var base_font_size = 26.6;
+    var base_font_size = 32;
 
     var tableau = document.getElementById("tableau");
     var cards = tableau.getElementsByClassName("card");
@@ -965,22 +911,9 @@ function DeckList() {
     decklist.ul = document.createElement("ul");
     decklist.ul.className = "selectionlist";
     decklist.checkboxes = {};
-    decklist.level_selectors = {};
-    decklist.global_level_selector = null;
 
 
     var listitem = document.createElement("li");
-    var global_level_selector = new LevelSelector("Select global level ", true);
-    listitem.appendChild(global_level_selector.html);
-    decklist.global_level_selector = global_level_selector;
-
-    var dom_dict = create_input("button", "applylevel", "Apply All", "");
-    dom_dict.input.onclick = function () {
-        for (key in decklist.level_selectors) {
-            decklist.level_selectors[key].set_value(decklist.global_level_selector.get_selection());
-        }
-    };
-    listitem.appendChild(dom_dict.root);
 
     decklist.ul.appendChild(listitem);
 
@@ -989,14 +922,9 @@ function DeckList() {
         var listitem = document.createElement("li");
         var dom_dict = create_input("checkbox", "deck", real_name, real_name);
         listitem.appendChild(dom_dict.root);
-
-        var level_selector = new LevelSelector(" with level ", true);
-        listitem.appendChild(level_selector.html);
-
+        
         decklist.ul.appendChild(listitem);
         decklist.checkboxes[real_name] = dom_dict.input;
-        decklist.level_selectors[real_name] = level_selector;
-
     }
     ;
 
@@ -1008,7 +936,7 @@ function DeckList() {
         var selected_checkbox = this.get_selection();
         var selected_decks = concat_arrays(selected_checkbox.map(function (name) {
             var deck = ((name in DECKS) ? DECKS[name] : []);
-            deck.level = decklist.level_selectors[name].get_selection();
+            deck.level = 0;
             return deck;
         }.bind(this)));
         return selected_decks;
@@ -1023,7 +951,6 @@ function DeckList() {
             var checkbox = this.checkboxes[deck_names.name];
             if (checkbox) {
                 checkbox.checked = true;
-                decklist.level_selectors[deck_names.name].set_value(deck_names.level);
             }
         }.bind(this));
     }
@@ -1038,11 +965,6 @@ function ScenarioList(scenarios) {
     scenariolist.spinner = null;
     scenariolist.decks = {};
     scenariolist.special_rules = {};
-    scenariolist.level_selector = null;
-
-    scenariolist.level_selector = new LevelSelector("Select level", false);
-
-    scenariolist.ul.appendChild(scenariolist.level_selector.html);
 
     for (var i = 0; i < scenarios.length; i++) {
         var scenario = scenarios[i];
@@ -1066,17 +988,6 @@ function ScenarioList(scenarios) {
         return Math.min(current_value, scenarios.length + 1);
     }
 
-    scenariolist.get_level = function (deck_name, special_rules) {
-
-        var base_level = scenariolist.level_selector.get_selection();
-
-        if ((special_rules.indexOf(SPECIAL_RULES.living_corpse_two_levels_extra) >= 0) && (deck_name == SPECIAL_RULES.living_corpse_two_levels_extra.affected_deck)) {
-            return Math.min(7, (parseInt(base_level) + parseInt(SPECIAL_RULES.living_corpse_two_levels_extra.extra_levels)));
-        } else {
-            return base_level;
-        }
-    }
-
     scenariolist.get_scenario_decks = function () {
         return (this.decks[this.get_selection()].map(function (deck) {
             if (DECKS[deck.name]) {
@@ -1084,7 +995,7 @@ function ScenarioList(scenarios) {
             } else if (deck.name.indexOf("Boss") != -1) {
                 deck.class = DECKS["Boss"].class;
             }
-            deck.level = scenariolist.get_level(deck.name, scenariolist.get_special_rules());
+            deck.level = 0;
             return deck;
         }));
     }
@@ -1115,7 +1026,7 @@ function init() {
         var selected_deck_names = decklist.get_selected_decks();
         write_to_storage("selected_deck_names", JSON.stringify(selected_deck_names));
         var selected_decks = selected_deck_names.map(function (deck_names) {
-            return load_ability_deck(deck_names.class, deck_names.name, deck_names.level);
+            return load_ability_deck(deck_names.class, deck_names.name, 0);
         });
         apply_deck_selection(selected_decks, true);
         var showmodifierdeck_deckspage = document.getElementById("showmodifierdeck-deckspage");
@@ -1134,7 +1045,7 @@ function init() {
         write_to_storage("selected_deck_names", JSON.stringify(selected_deck_names));
         decklist.set_selection(selected_deck_names);
         var selected_decks = selected_deck_names.map(function (deck_names) {
-            return load_ability_deck(deck_names.class, deck_names.name, deck_names.level);
+            return load_ability_deck(deck_names.class, deck_names.name, 0);
         });
         apply_deck_selection(selected_decks, false);
         var modifier_deck_section = document.getElementById("modifier-container");
@@ -1150,7 +1061,7 @@ function init() {
         var selected_deck_names = JSON.parse(get_from_storage("selected_deck_names"));
         decklist.set_selection(selected_deck_names);
         var selected_decks = selected_deck_names.map(function (deck_names) {
-            return load_ability_deck(deck_names.class, deck_names.name, deck_names.level);
+            return load_ability_deck(deck_names.class, deck_names.name, 0);
         });
         apply_deck_selection(selected_decks, true);
         var modifier_deck_section = document.getElementById("modifier-container");

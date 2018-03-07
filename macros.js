@@ -7,7 +7,7 @@ MACROS =
     , "%aoe-circle-with-middle-black%":             "<div class='collapse small'><img class='aoe h3' src='images/aoe-circle-with-middle-black.svg'></div>"
     , "%aoe-circle-with-side-black%":               "<img class='aoe h3' src='images/aoe-circle-with-side-black.svg'>"
     , "%aoe-line-3-with-black%":                    "<div class='collapse'><img class='aoe h1 rotated' src='images/aoe-line-3-with-black.svg'></div>"
-    , "%aoe-line-4-with-black%":                    "<div class='collapse'><img class='aoe h1 rotated' src='images/aoe-line-4-with-black.svg'></div>"
+    , "%aoe-line-4-with-black%":                    "<img class='aoe h1 right-aligned rotated2' src='images/aoe-line-4-with-black.svg'></div>"
     , "%aoe-line-6-with-black%":                    "<img class='aoe h6 right-aligned' src='images/aoe-line-6-with-black.svg'></div>"
     , "%aoe-triangle-2-side%":                      "<div class='collapse'><img class='aoe h2' src='images/aoe-triangle-2-side.svg'></div>"
     , "%aoe-triangle-2-side-with-black%":           "<div class='collapse'><img class='aoe h2' src='images/aoe-triangle-2-side-with-black.svg'></div>"
@@ -207,17 +207,7 @@ function expand_string(s, attack, move, range)
     
     while (found = re.exec(s))
     {
-        if (found[1] === "attack")
-        {
-            s = s.replace(found[0], expand_stat(found[0], "attack", attack));
-        } else if  (found[1] === "move")
-        {
-            s = s.replace(found[0], expand_stat(found[0], "move", move));
-        } else if (found[1] === "range")
-        {
-            s = s.replace(found[0], expand_stat(found[0], "range", range));
-        }
+       s = s.replace(found[0], "%" + found[1] + "% " + found[2] + " " + found[3]); // add space after +/-
     }
-
     return s.replace(/%[^%]*%/gi, expand_macro);
 }

@@ -342,12 +342,12 @@ DECK_DEFINITONS =
         , cards:
           [ [false, "32", "* %move% +1", "* %attack% -1", "** %range% +0"]
             , [false, "52", "* %move% +0", "* %attack% +0", "** %range% +0"]
-            , [true,  "57", "* %move% +0", "* %attack% -1 %aoe-triangle-2-side%", "** %range% +0"]
+            , [true,  "57", "* %move% +0", "* %attack% -1 %aoe-triangle-2-side%", "** %range% -1"]
             , [false, "27", "* %attack% +0", "** %range% +0,  %target% 2, %poison%"]
             , [false, "87", "* %move% -1", "* %attack% +1", "** %range% +0"]
             , [false, "89", "* %attack% -2", "** %range% +0", "** %stun%"]
             , [false, "06", "* %shield% 2", "* %heal% 2", "** Self", "* %strengthen%", "** Self"]
-            , [true,  "89", "* %move% -1", "* %attack% -2 %aoe-circle%", "** %range% +0", "** %poison%"]
+            , [true,  "89", "* %move% -1", "* %attack% -2 %aoe-circle%", "** %range% -2", "** %poison%"]
             ]
         },
         { class: "Stone Golem"
